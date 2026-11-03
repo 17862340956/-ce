@@ -45,4 +45,3 @@ jobs:
             build_logs/**
             KIT_MANIFEST.json
             TARGET_PROFILE.json
-
