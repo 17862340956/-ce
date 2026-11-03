@@ -5,37 +5,39 @@ cd "$ROOT"
 LOG="$ROOT/build_logs"
 OUT="$ROOT/dist"
 mkdir -p "$LOG"
-exec > >(tee "$LOG/build.log") 2>&1
-trap 'rc=$?; printf "BUILD_FAILED rc=%s line=%s\n" "$rc" "$LINENO" >&2; exit "$rc"' ERR
-fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+exec >"$LOG/build.log" 2>&1
+fail() {
+  printf 'ERROR: %s\n' "$*" >&2
+  exit 1
+}
 printf 'BUILD_KIT=pkg110-ddk-r1\n'
-for tool in bash docker python3 sha256sum; do command -v "$tool" >/dev/null || fail "Missing tool: $tool"; done
+for tool in bash docker python3 sha256sum; do
+  command -v "$tool" >/dev/null 2>&1 || fail "Missing tool: $tool"
+done
 python3 verify_kit.py
 python3 -c 'from elftools.elf.elffile import ELFFile' || fail 'Install requirements.txt first'
 [ ! -e "$OUT" ] || fail "Existing dist preserved: $OUT; use a new working copy"
-docker version >/dev/null
+docker version >/dev/null 2>&1
 WRAPPER_HOME=$(mktemp -d "$LOG/ddk-home.XXXXXX")
 mkdir -p "$WRAPPER_HOME/.ddk"
 printf 'github\n' > "$WRAPPER_HOME/.ddk/source"
 printf 'docker\n' > "$WRAPPER_HOME/.ddk/mode"
 HOME="$WRAPPER_HOME" bash "$ROOT/ddk" pull --target android14-6.1
 IMAGE=ghcr.io/ylarod/ddk:android14-6.1
-# Select one immutable local image ID for inspection, clean, and compilation.
 IMAGE_ID=$(docker image inspect "$IMAGE" --format '{{.Id}}')
 docker image inspect "$IMAGE_ID" > "$LOG/image-inspect.json"
-RUN=(docker run --platform linux/amd64 --rm -v "$ROOT:/build" -w /build "$IMAGE_ID")
-"${RUN[@]}" sh -c 'clang --version' > "$LOG/clang-version.txt"
+docker run --platform linux/amd64 --rm -v "$ROOT:/build" -w /build "$IMAGE_ID" sh -c 'clang --version' > "$LOG/clang-version.txt"
 cat "$LOG/clang-version.txt"
 grep -q 'r487747c' "$LOG/clang-version.txt" || fail 'Target requires clang-r487747c'
-"${RUN[@]}" make clean
-"${RUN[@]}" make all LLVM=1 LLVM_IAS=1 -j"${QILIN_JOBS:-2}"
+docker run --platform linux/amd64 --rm -v "$ROOT:/build" -w /build "$IMAGE_ID" make clean
+docker run --platform linux/amd64 --rm -v "$ROOT:/build" -w /build "$IMAGE_ID" make all LLVM=1 LLVM_IAS=1 -j"${QILIN_JOBS:-2}"
 [ -s cpuinfo_spoof.ko ] || fail 'No module produced'
 cp cpuinfo_spoof.ko "$LOG/cpuinfo_spoof.raw.ko"
 if [ -s cpuinfo_spoof.mod.c ]; then
-    cp cpuinfo_spoof.mod.c "$LOG/cpuinfo_spoof.mod.c"
-    printf 'MODPOST_VERSION_TABLE_BEGIN\n'
-    sed -n '/____versions/,/};/p' cpuinfo_spoof.mod.c
-    printf 'MODPOST_VERSION_TABLE_END\n'
+  cp cpuinfo_spoof.mod.c "$LOG/cpuinfo_spoof.mod.c"
+  printf 'MODPOST_VERSION_TABLE_BEGIN\n'
+  sed -n '/____versions/,/};/p' cpuinfo_spoof.mod.c
+  printf 'MODPOST_VERSION_TABLE_END\n'
 fi
 STAGING=$(mktemp -d "$LOG/dist.XXXXXX")
 cp cpuinfo_spoof.ko "$STAGING/cpuinfo_spoof.ko"

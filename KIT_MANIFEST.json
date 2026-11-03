@@ -5,7 +5,7 @@
     "target_layout.h": "4cb51426d53c9c9e6ddfc8bb9c2e56dbd4981fafa16dc7a5da3322f2ddc87c2c",
     "kirin9020.h": "84598b48101cca3ee76141a20d149e4e9bf133eb8c25a02ab15ccb337ea9c719",
     "Makefile": "5311fcf0ad5dfb9477c35a589a0bc1dd9e3510f335e3e9086989671364536170",
-    "build.sh": "89850f555b0705dea9c07ba0c1af9d601b94baae94b834b0908353e30780fabb",
+    "build.sh": "370c43a4a9b909b17a0d5e93adfb73d853a89e47ae7ec8eb1f32c28c9e73937e",
     "prepare_ddk.sh": "d4f0dc6a3b1bdcef3d0cfb94e7660f640cda0aa4ff5c1546882fed11d88f7e32",
     "restore_modpost.awk": "17721f464b27908fd941232811e5e084173d61b5c3f7426aeb85990e36ca4cc5",
     "ddk": "7b15213b3f758c3af500115fb120003d6c57b353ff887cbbd79e9a98e13d54dc",
