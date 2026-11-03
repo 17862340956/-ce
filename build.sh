@@ -43,9 +43,8 @@ python3 fix_vermagic.py "$STAGING/cpuinfo_spoof.ko"
 python3 report.py "$STAGING/cpuinfo_spoof.ko" "$STAGING/build_report.json"
 cp run.sh TARGET_PROFILE.json TARGET_BTF.json TARGET_CONFIG.txt KIT_MANIFEST.json "$STAGING/"
 cp "$LOG/image-inspect.json" "$STAGING/"
-(
-    cd "$STAGING"
-    sha256sum cpuinfo_spoof.ko build_report.json run.sh TARGET_PROFILE.json TARGET_BTF.json TARGET_CONFIG.txt KIT_MANIFEST.json image-inspect.json > SHA256SUMS.txt
-)
+cd "$STAGING"
+sha256sum cpuinfo_spoof.ko build_report.json run.sh TARGET_PROFILE.json TARGET_BTF.json TARGET_CONFIG.txt KIT_MANIFEST.json image-inspect.json > SHA256SUMS.txt
+cd "$ROOT"
 mv -- "$STAGING" "$OUT"
 printf 'KO_BUILD_SUCCESS\nDIST=%s\n' "$OUT"
