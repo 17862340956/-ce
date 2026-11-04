@@ -2,8 +2,10 @@ name: PKG110 SM8650 6.1 KO r1
 
 on:
   workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   ko:
     runs-on: ubuntu-22.04
@@ -20,6 +22,7 @@ jobs:
       - name: Verify build inputs and syntax
         run: |
           python3 verify_kit.py
+          python3 self_check.py
           bash -n build.sh
           bash -n ddk
           sh -n prepare_ddk.sh
